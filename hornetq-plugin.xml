@@ -41,7 +41,7 @@
             value="java.lang:type=Memory"/>
 
     <filter name="hornetq_server"
-            value="org.hornetq:module=Core,type=Server"/>
+            value="org.hornetq:module=Core,type=Server:${alias}"/>
 
     <server name="HornetQ" version="2.x">
 
@@ -72,9 +72,6 @@
         <plugin type="control"
                 class="org.hyperic.hq.product.jmx.MxControlPlugin"/>
 
-        <plugin type="livedata"
-                class="org.hyperic.hq.product.jmx.MxLiveDataPlugin"/>
-
         <actions include="gc"/>
 
         <property name="OBJECT_NAME.gc" value="${memory}"/>
@@ -104,11 +101,12 @@
                 template="sigar:Type=ProcState,Arg=%process.query%:State"
                 indicator="true"/>
 
-         &process-metrics;
+        &process-metrics;
 
         <metric name="Connections"
                 alias="ConnectionCount"
-                template="${hornetq_server}"/>
+                template="${hornetq_server}"
+                indicator="true"/>
 
         <metric name="Heap Memory Used"
                 units="B"
@@ -173,6 +171,8 @@
             </config>
 
             <plugin type="autoinventory"/>
+            <plugin type="control"
+                    class="org.hyperic.hq.product.jmx.MxControlPlugin"/>
 
             <metric name="Availability"
                     indicator="true"/>
