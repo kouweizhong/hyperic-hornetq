@@ -21,14 +21,23 @@ being monitored.
 Metrics Being Gathered:
 
 * Java 
+
 ** Heap Free and Used
+
 ** Thread Count
+
 ** Garbage Collection Count & Time per Minute
+
 * HornetQ
+
 ** Connection Count
+
 ** For every queue
+
 *** Queue Depth
+
 *** Message Processing Rates
+
 *** etc.
 
 ### Log File Tracking
@@ -45,11 +54,17 @@ instructions below
 
 For a queue:
 * pause
+
 * resume
+
 * sendMessagesToDeadLetterAddress
+
 * listMessages
+
 * moveMessages
+
 * listMessageCounterAsHTML
+
 * listMessageCounterHistoryAsHTML
 
 ### Dependencies
@@ -69,6 +84,7 @@ Tested with [Hyperic HQ](http://www.hyperic.com/) version 4.4
 Server Installation
 * Copy the file _hyperic-hornetq.xml_ into the following folder under the server installation:
     hq-engine/server/default/deploy/hq.ear/hq-plugins
+
 * Output similar to the following should appear in the server logfile (logs/server.log)
 <pre>
 2011-02-21 13:53:53,972 INFO  [ScannerThread] [org.hyperic.hq.product.server.mbean.ProductPluginDeployer@654] HQ plugin hornetq-plugin.xml undeployed
