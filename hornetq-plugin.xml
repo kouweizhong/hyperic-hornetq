@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   Copyright 2011 Clarity Services, Inc.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+    Document   : hornetq-plugin.xml
+    Author     : Reid Morrison
+    Home Page  : https://github.com/ClarityServices/hyperic-hornetq
+    Version    : 1.0.0
+    Description:
+        Hyperic HQ Plug-in to monitor HornetQ
+-->
+<!DOCTYPE plugin [
+  <!ENTITY process-metrics SYSTEM "/pdk/plugins/process-metrics.xml">
+]>
+
+<plugin>
+
+    <classpath>
+        <include name="pdk/lib/mx4j"/>
+    </classpath>
+
+    <filter name="template"
+            value="${OBJECT_NAME}:${alias}"/>
+
+    <filter name="threading"
+            value="java.lang:type=Threading:${alias}"/>
+
+    <filter name="memory"
+            value="java.lang:type=Memory"/>
+
+    <filter name="hornetq_server"
+            value="org.hornetq:module=Core,type=Server"/>
+
+    <server name="HornetQ" version="2.x">
+
+        <property name="DEFAULT_CONFIG_FILE"
+                  value="/etc/hornetq/hornetq.yml"/>
+
+        <property name="DEFAULT_LOG_FILE"
+                  value="/var/log/hornetq/hornetq.log"/>
+                  
+        <property name="PROC_MAIN_CLASS"
+                  value="org.hornetq.integration.bootstrap.HornetQBootstrapServer"/>
+                  
+        <property name="OBJECT_NAME"
+                  value="java.lang:type=Runtime"/>
+
+        <plugin type="autoinventory"
+                class="org.hyperic.hq.product.jmx.SunMxServerDetector"/>
+
+        <plugin type="measurement"
+                class="org.hyperic.hq.product.jmx.MxMeasurementPlugin"/>
+
+        <plugin type="log_track"
+                class="org.hyperic.hq.product.LogFileTailPlugin"/>
+
+        <plugin type="config_track"
+                class="org.hyperic.hq.product.ConfigFileTrackPlugin"/>
+
+        <plugin type="control"
+                class="org.hyperic.hq.product.jmx.MxControlPlugin"/>
+
+        <plugin type="livedata"
+                class="org.hyperic.hq.product.jmx.MxLiveDataPlugin"/>
+
+        <actions include="gc"/>
+
+        <property name="OBJECT_NAME.gc" value="${memory}"/>
+        <property name="PROC_QUERY" value="State.Name.eq=java,Args.*.eq=${PROC_MAIN_CLASS}"/>
+
+        <config>
+            <option name="jmx.url"
+                    description="JMX URL to HornetQ Server"
+                    default="service:jmx:rmi:///jndi/rmi://localhost:5455/jmxrmi"/>
+            <option name="jmx.username"
+                    description="JMX username"
+                    optional="true"/>
+            <option name="jmx.password"
+                    description="JMX password"
+                    optional="true"
+                    type="secret"/>
+            <option name="process.query" description="PTQL for HornetQ Process" default="${PROC_QUERY}"/>
+        </config>
+
+        <properties>
+            <property name="VmVersion" description="JVM Version"/>
+            <property name="VmVendor" description="JVM Vendor"/>
+            <property name="VmName" description="JVM Name"/>
+        </properties>
+
+        <metric name="Availability"
+                template="sigar:Type=ProcState,Arg=%process.query%:State"
+                indicator="true"/>
+
+         &process-metrics;
+
+        <metric name="Connections"
+                alias="ConnectionCount"
+                template="${hornetq_server}"/>
+
+        <metric name="Heap Memory Used"
+                units="B"
+                template="${memory}:Composite.HeapMemoryUsage.used"/>
+
+        <metric name="Heap Memory Committed"
+                units="B"
+                template="${memory}:Composite.HeapMemoryUsage.committed"/>
+
+        <metric name="Heap Memory Free"
+                indicator="true"
+                units="B"
+                template="${memory}:Composite.HeapMemoryUsage.free"/>
+
+        <metric name="Heap Memory Max"
+                units="B"
+                collectionType="static"
+                template="${memory}:Composite.HeapMemoryUsage.max"/>
+
+        <metric name="Thread Count"
+                indicator="true"
+                template="${threading}"/>
+
+        <metric name="Daemon Thread Count"
+                template="${threading}"/>
+
+        <metric name="Peak Thread Count"
+                collectionType="static"
+                template="${threading}"/>
+
+        <service name="Garbage Collector">
+            <property name="OBJECT_NAME"
+                      value="java.lang:type=GarbageCollector,name=*"/>
+
+            <config>
+                <option name="name"
+                        description="Garbage Collector name"/>
+            </config>
+
+            <plugin type="autoinventory"/>
+
+            <metric name="Availability"
+                    indicator="true"/>
+
+            <metric name="Collection Count"
+                    collectionType="trendsup"
+                    indicator="true"/>
+
+            <metric name="Collection Time"
+                    collectionType="trendsup"
+                    units="ms"
+                    indicator="true"/>
+        </service>
+
+        <service name="Queue">
+            <property name="OBJECT_NAME"
+                      value="org.hornetq:module=Core,type=Queue,address=*,name=*"/>
+
+            <config>
+                <option name="name"
+                        description="Queue name"/>
+            </config>
+
+            <plugin type="autoinventory"/>
+
+            <metric name="Availability"
+                    indicator="true"/>
+
+            <metric name="Consumer Count"
+                    indicator="true"/>
+
+            <metric name="Queue Depth"
+                    alias="MessageCount"
+                    indicator="true"/>
+
+            <metric name="Messages Processed"
+                    alias="MessagesAdded"
+                    collectionType="trendsup"/>
+
+            <metric name="Scheduled Count"/>
+            <metric name="Delivering Count"/>
+
+            <actions include="pause,resume,sendMessagesToDeadLetterAddress,listMessages,moveMessages,listMessageCounterAsHTML,listMessageCounterHistoryAsHTML"/>
+
+        </service>
+
+    </server>
+
+<!--
+ ==================== Plugin Help ===========================
+-->
+    <help name="HornetQ">
+<![CDATA[
+  <p>
+  <h3>Configure HQ for monitoring Java</h3>
+  </p>
+  <p>
+  1) Add this line to the run.sh file which starts HornetQ, before the line that starts with: "export JVM_ARGS"
+  <br>
+export CLUSTER_PROPS="$CLUSTER_PROPS -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=6969 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
+  </p>
+]]>
+    </help>
+</plugin>
