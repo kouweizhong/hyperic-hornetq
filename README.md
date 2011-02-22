@@ -19,6 +19,7 @@ being monitored.
 ### Metrics
 
 Metrics Being Gathered:
+
 * Java 
 ** Heap Free and Used
 ** Thread Count
