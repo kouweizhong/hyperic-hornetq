@@ -18,27 +18,21 @@ being monitored.
 
 ### Metrics
 
+For the complete list of Metrics available, please see the [HyperForge HornetQ documentation](http://support.hyperic.com/display/hypcomm/HornetQ)
+
 Metrics Being Gathered:
 
-* Java 
+* HornetQ Connection Count
 
-** Heap Free and Used
+* Queue Depth
 
-** Thread Count
+* Message Processing Rates
 
-** Garbage Collection Count & Time per Minute
+* Java Heap Free and Used
 
-* HornetQ
+* Thread Count
 
-** Connection Count
-
-** For every queue
-
-*** Queue Depth
-
-*** Message Processing Rates
-
-*** etc.
+* Garbage Collection Count & Time per Minute
 
 ### Log File Tracking
 
@@ -110,6 +104,14 @@ Server Installation
 * Code: `git clone git://github.com/ClarityServices/hyperic-hornetq.git`
 * Home: <https://github.com/ClarityServices/hyperic-hornetq>
 * Bugs: <https://github.com/ClarityServices/hyperic-hornetq/issues>
+
+### Developers
+
+To generate updated documentation for the HyperForge Wiki, run the following command:
+
+    java -jar bundles/agent-4.4.0-1509/pdk/lib/hq-product.jar -Dplugins.exclude=vsphere -m generate -a metrics-wiki
+
+Then update the page on [HyperForge](http://support.hyperic.com/display/hypcomm/HornetQ)
 
 ### Author
 
