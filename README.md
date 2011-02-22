@@ -53,6 +53,7 @@ instructions below
 ### Control Actions
 
 For a queue:
+
 * pause
 
 * resume
@@ -82,6 +83,7 @@ Tested with [Hyperic HQ](http://www.hyperic.com/) version 4.4
 ### Install
 
 Server Installation
+
 * Copy the file _hyperic-hornetq.xml_ into the following folder under the server installation:
     hq-engine/server/default/deploy/hq.ear/hq-plugins
 
